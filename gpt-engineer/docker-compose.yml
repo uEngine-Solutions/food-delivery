@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+
+  generate-user-order-management:
+    tty: true
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    image: ghcr.io/jinyoung/gpt-engineer:v5
+#    command: ["-sh"]
+    volumes:
+      - ../user-order-management:/project
+  generate-rider-management:
+    tty: true
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    image: ghcr.io/jinyoung/gpt-engineer:v5
+#    command: ["-sh"]
+    volumes:
+      - ../rider-management:/project
+  generate-store-management:
+    tty: true
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    image: ghcr.io/jinyoung/gpt-engineer:v5
+#    command: ["-sh"]
+    volumes:
+      - ../store-management:/project
