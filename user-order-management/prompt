@@ -5,6 +5,7 @@ Please implement for this Event Storming Model:
 
 I want to utilize following techniques:
 
+- JDK11
 - clean architecture
 - spring-boot3
 - spring-data-rest
@@ -16,6 +17,7 @@ I want to utilize following techniques:
 
 
 SELF-CRITICISM: 
+ - "OrderPlaced" event MUST be published after Order has been successfully accepted.
  - when you create pom.xml, USE correct parent project to spring boot 3
  - when you create pom.xml, you MUST specify the version: 3.1.3 ONLY for the spring-cloud-streams
  - Please generate start from pom.xml

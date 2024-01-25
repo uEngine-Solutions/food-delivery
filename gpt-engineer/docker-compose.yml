@@ -2,33 +2,16 @@ version: "3"
 
 services:
 
-  monolith:
+  
+  generate-user-order-management:
     tty: true
+    stdin_open: true
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     image: ghcr.io/jinyoung/gpt-engineer:v5
-#    command: ["-sh"]
+    command: ["-i"]
     volumes:
-      - ../bpm:/project
-
-
-#   monolith:
-#     tty: true
-#     environment:
-#       - OPENAI_API_KEY=${OPENAI_API_KEY}
-#     image: ghcr.io/jinyoung/gpt-engineer:v5
-# #    command: ["-sh"]
-#     volumes:
-#       - ../monolith:/project
-
-#   generate-user-order-management:
-#     tty: true
-#     environment:
-#       - OPENAI_API_KEY=${OPENAI_API_KEY}
-#     image: ghcr.io/jinyoung/gpt-engineer:v5
-# #    command: ["-sh"]
-#     volumes:
-#       - ../user-order-management:/project
+      - ../user-order-management:/project
 #   generate-rider-management:
 #     tty: true
 #     environment:

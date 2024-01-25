@@ -1,0 +1,15 @@
+file
+pom.xml
+prompt
+run.sh
+src/main/java/com/example/userordermanagement/config/KafkaConfig.java
+src/main/java/com/example/userordermanagement/domain/Address.java
+src/main/java/com/example/userordermanagement/domain/Money.java
+src/main/java/com/example/userordermanagement/domain/Order.java
+src/main/java/com/example/userordermanagement/domain/PaymentMethodType.java
+src/main/java/com/example/userordermanagement/dto/OrderPlacedEvent.java
+src/main/java/com/example/userordermanagement/dto/PlaceOrderCommand.java
+src/main/java/com/example/userordermanagement/repository/OrderRepository.java
+src/main/java/com/example/userordermanagement/service/OrderService.java
+src/main/java/com/example/userordermanagement/UserOrderManagementApplication.java
+src/test/java/com/example/userordermanagement/UserOrderManagementApplicationTests.java

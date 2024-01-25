@@ -4,7 +4,7 @@ pom.xml
 ```xml
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.example</groupId>
@@ -24,33 +24,45 @@ pom.xml
     </properties>
 
     <dependencies>
-        <!-- Spring Boot Starter Web, includes REST Controllers support -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <!-- Spring Boot Starter Data JPA, includes spring-data-rest -->
+        <!-- Spring Boot Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-        <!-- H2 Database Engine -->
+        <!-- Lombok Dependency -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.24</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- H2 Database Dependency -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok for boilerplate code reduction -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Spring Cloud Stream with Kafka Binder -->
+        <!-- Kafka with Spring Cloud Streams -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-stream</artifactId>
@@ -59,19 +71,14 @@ pom.xml
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-stream-binder-kafka</artifactId>
+            <version>3.1.3</version>
         </dependency>
 
         <!-- Jakarta Persistence API -->
         <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
-        </dependency>
-
-        <!-- JUnit for testing -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <version>3.0.0</version>
         </dependency>
     </dependencies>
 
@@ -98,7 +105,7 @@ pom.xml
 </project>
 ```
 
-Next, we will create the `run.sh` script to build and run the application.
+Next, we will create the `run.sh` file to build and run the application.
 
 run.sh
 ```sh
@@ -107,31 +114,53 @@ mvn clean install --no-transfer-progress
 mvn spring-boot:run --no-transfer-progress
 ```
 
-Make sure to give execution permission to the `run.sh` script:
+Make sure to give execution permission to the `run.sh` file:
 ```sh
 chmod +x run.sh
 ```
 
-Now, let's start implementing the core classes, functions, and methods as per the Event Storming Model provided. We will follow the Clean Architecture approach, which typically involves organizing the code into layers with clear responsibilities:
+Now, let's start creating the Java files for the application. We will begin with the domain model, following the clean architecture and the Event Storming Model provided.
 
-- Entities (Domain Layer)
-- Use Cases (Application Layer)
-- Interface Adapters (Infrastructure Layer)
-- Frameworks and Drivers (Infrastructure Layer)
+src/main/java/com/example/userordermanagement/domain/Order.java
+```java
+package com.example.userordermanagement.domain;
 
-We will start with the domain layer by defining the entities and value objects.
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "orders")
+@Getter
+@Setter
+public class Order {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String orderId;
+    private String foodSelection;
+    private Integer quantity;
+    private String specialRequest;
+    private Address deliveryAddress;
+    private String paymentMethod;
+    private PaymentMethodType paymentMethodType;
+    private Money orderAmount;
+    private String orderStatus;
+    private String estimatedDeliveryTime;
+}
+```
 
 src/main/java/com/example/userordermanagement/domain/Address.java
 ```java
 package com.example.userordermanagement.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Address {
     private String street;
     private String city;
@@ -141,67 +170,33 @@ public class Address {
 }
 ```
 
+src/main/java/com/example/userordermanagement/domain/PaymentMethodType.java
+```java
+package com.example.userordermanagement.domain;
+
+public enum PaymentMethodType {
+    CREDIT_CARD,
+    DEBIT_CARD,
+    PAYPAL,
+    CASH_ON_DELIVERY
+}
+```
+
 src/main/java/com/example/userordermanagement/domain/Money.java
 ```java
 package com.example.userordermanagement.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Money {
     private BigDecimal amount;
     private String currency;
 }
 ```
 
-src/main/java/com/example/userordermanagement/domain/Order.java
-```java
-package com.example.userordermanagement.domain;
-
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
-
-import java.util.UUID;
-
-@Entity
-@Table(name = "orders")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Order {
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    private UUID orderId;
-
-    private String foodSelection;
-    private Integer quantity;
-    private String specialRequest;
-
-    @Embedded
-    private Address deliveryAddress;
-
-    private String paymentMethod;
-    private String paymentMethodType;
-
-    @Embedded
-    private Money orderAmount;
-
-    private String orderStatus;
-    private String estimatedDeliveryTime;
-}
-```
-
-Next, we will define the repository interface for the `Order` entity.
+Next, we will create the repository interface for the `Order` entity.
 
 src/main/java/com/example/userordermanagement/repository/OrderRepository.java
 ```java
@@ -209,16 +204,14 @@ package com.example.userordermanagement.repository;
 
 import com.example.userordermanagement.domain.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
-import java.util.UUID;
-
-@Repository
-public interface OrderRepository extends JpaRepository<Order, UUID> {
+@RepositoryRestResource(collectionResourceRel = "orders", path = "orders")
+public interface OrderRepository extends JpaRepository<Order, Long> {
 }
 ```
 
-Now, let's define the application services that will handle the commands and publish events.
+Now, let's create the service layer that will handle the business logic.
 
 src/main/java/com/example/userordermanagement/service/OrderService.java
 ```java
@@ -229,9 +222,6 @@ import com.example.userordermanagement.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
-
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
@@ -241,86 +231,50 @@ public class OrderService {
         this.orderRepository = orderRepository;
     }
 
-    public Order placeOrder(Order order) {
-        // Logic to place an order
-        // Publish OrderPlaced event
-        return orderRepository.save(order);
-    }
-
-    public void cancelOrder(UUID orderId) {
-        // Logic to cancel an order
-        // Publish OrderCancelled event
-        orderRepository.deleteById(orderId);
-    }
-
-    public List<Order> checkPreviousOrders() {
-        // Logic to retrieve previous orders
-        // Publish PreviousOrdersChecked event
-        return orderRepository.findAll();
-    }
-
-    public void confirmOrder(UUID orderId) {
-        // Logic to confirm an order
-        // No event is published for this action in the model
-        Order order = orderRepository.findById(orderId).orElseThrow();
-        order.setOrderStatus("Confirmed");
-        orderRepository.save(order);
-    }
+    // Business logic methods will be added here
 }
 ```
 
-Next, we will define the REST controllers that will expose the endpoints to interact with the application.
+We will also need to create DTOs (Data Transfer Objects) for the commands and events.
 
-src/main/java/com/example/userordermanagement/controller/OrderController.java
+src/main/java/com/example/userordermanagement/dto/PlaceOrderCommand.java
 ```java
-package com.example.userordermanagement.controller;
+package com.example.userordermanagement.dto;
 
-import com.example.userordermanagement.domain.Order;
-import com.example.userordermanagement.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.example.userordermanagement.domain.Address;
+import lombok.Data;
 
-import java.util.List;
-import java.util.UUID;
-
-@RestController
-@RequestMapping("/orders")
-public class OrderController {
-    private final OrderService orderService;
-
-    @Autowired
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
-
-    @PostMapping
-    public ResponseEntity<Order> placeOrder(@RequestBody Order order) {
-        Order placedOrder = orderService.placeOrder(order);
-        return ResponseEntity.ok(placedOrder);
-    }
-
-    @DeleteMapping("/{orderId}")
-    public ResponseEntity<Void> cancelOrder(@PathVariable UUID orderId) {
-        orderService.cancelOrder(orderId);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Order>> checkPreviousOrders() {
-        List<Order> orders = orderService.checkPreviousOrders();
-        return ResponseEntity.ok(orders);
-    }
-
-    @PostMapping("/{orderId}/confirm")
-    public ResponseEntity<Void> confirmOrder(@PathVariable UUID orderId) {
-        orderService.confirmOrder(orderId);
-        return ResponseEntity.ok().build();
-    }
+@Data
+public class PlaceOrderCommand {
+    private String foodSelection;
+    private Integer quantity;
+    private String specialRequest;
+    private Address deliveryAddress;
+    private String paymentMethod;
 }
 ```
 
-We will also need to configure the Kafka binder for Spring Cloud Stream.
+src/main/java/com/example/userordermanagement/dto/OrderPlacedEvent.java
+```java
+package com.example.userordermanagement.dto;
+
+import com.example.userordermanagement.domain.Address;
+import com.example.userordermanagement.domain.Money;
+import lombok.Data;
+
+@Data
+public class OrderPlacedEvent {
+    private String orderId;
+    private String foodSelection;
+    private Integer quantity;
+    private String specialRequest;
+    private Address deliveryAddress;
+    private String paymentMethod;
+    private Money orderAmount;
+}
+```
+
+We will also need to create a configuration class for Kafka.
 
 src/main/java/com/example/userordermanagement/config/KafkaConfig.java
 ```java
@@ -333,30 +287,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableBinding(Source.class)
 public class KafkaConfig {
-    // Configuration for Kafka binder will be picked up from application.properties
+    // Kafka configuration will be added here
 }
 ```
 
-Next, we will create the `application.properties` file to configure the application, including the H2 database and Kafka connection details.
-
-src/main/resources/application.properties
-```properties
-spring.datasource.url=jdbc:h2:mem:userorderdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-spring.datasource.driverClassName=org.h2.Driver
-spring.datasource.username=sa
-spring.datasource.password=
-spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
-spring.h2.console.enabled=true
-
-spring.jpa.show-sql=true
-spring.jpa.hibernate.ddl-auto=update
-
-spring.kafka.bootstrap-servers=localhost:9092
-spring.cloud.stream.kafka.binder.brokers=localhost:9092
-spring.cloud.stream.bindings.output.destination=order-events
-```
-
-Finally, we will create the main application class to bootstrap the Spring Boot application.
+Finally, we will create the main application class.
 
 src/main/java/com/example/userordermanagement/UserOrderManagementApplication.java
 ```java
@@ -367,67 +302,27 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class UserOrderManagementApplication {
+
     public static void main(String[] args) {
         SpringApplication.run(UserOrderManagementApplication.class, args);
     }
 }
 ```
 
-To complete the implementation, we will add a simple JUnit test for the `OrderService`.
+We will also need to create test cases for our application.
 
-src/test/java/com/example/userordermanagement/service/OrderServiceTest.java
+src/test/java/com/example/userordermanagement/UserOrderManagementApplicationTests.java
 ```java
-package com.example.userordermanagement.service;
+package com.example.userordermanagement;
 
-import com.example.userordermanagement.domain.Order;
-import com.example.userordermanagement.repository.OrderRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
-
 @SpringBootTest
-public class OrderServiceTest {
-    @Mock
-    private OrderRepository orderRepository;
-
-    @InjectMocks
-    private OrderService orderService;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+class UserOrderManagementApplicationTests {
 
     @Test
-    public void testPlaceOrder() {
-        Order order = new Order();
-        when(orderRepository.save(any(Order.class))).thenReturn(order);
-
-        Order placedOrder = orderService.placeOrder(order);
-
-        assertEquals(order, placedOrder);
-        verify(orderRepository, times(1)).save(order);
-    }
-
-    @Test
-    public void testCheckPreviousOrders() {
-        List<Order> orders = Collections.singletonList(new Order());
-        when(orderRepository.findAll()).thenReturn(orders);
-
-        List<Order> foundOrders = orderService.checkPreviousOrders();
-
-        assertEquals(orders, foundOrders);
-        verify(orderRepository, times(1)).findAll();
+    void contextLoads() {
     }
 }
 ```

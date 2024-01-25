@@ -5,9 +5,6 @@ import com.example.userordermanagement.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
-
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
@@ -17,29 +14,30 @@ public class OrderService {
         this.orderRepository = orderRepository;
     }
 
+    private final EventPublisherService eventPublisherService;
+
+    @Autowired
+    public OrderService(OrderRepository orderRepository, EventPublisherService eventPublisherService) {
+        this.orderRepository = orderRepository;
+        this.eventPublisherService = eventPublisherService;
+    }
+
     public Order placeOrder(Order order) {
-        // Logic to place an order
-        // Publish OrderPlaced event
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        OrderPlacedEvent event = convertToOrderPlacedEvent(savedOrder);
+        eventPublisherService.publishOrderPlacedEvent(event);
+        return savedOrder;
     }
 
-    public void cancelOrder(UUID orderId) {
-        // Logic to cancel an order
-        // Publish OrderCancelled event
-        orderRepository.deleteById(orderId);
-    }
-
-    public List<Order> checkPreviousOrders() {
-        // Logic to retrieve previous orders
-        // Publish PreviousOrdersChecked event
-        return orderRepository.findAll();
-    }
-
-    public void confirmOrder(UUID orderId) {
-        // Logic to confirm an order
-        // No event is published for this action in the model
-        Order order = orderRepository.findById(orderId).orElseThrow();
-        order.setOrderStatus("Confirmed");
-        orderRepository.save(order);
+    private OrderPlacedEvent convertToOrderPlacedEvent(Order order) {
+        OrderPlacedEvent event = new OrderPlacedEvent();
+        event.setOrderId(order.getOrderId());
+        event.setFoodSelection(order.getFoodSelection());
+        event.setQuantity(order.getQuantity());
+        event.setSpecialRequest(order.getSpecialRequest());
+        event.setDeliveryAddress(order.getDeliveryAddress());
+        event.setPaymentMethod(order.getPaymentMethod());
+        event.setOrderAmount(order.getOrderAmount());
+        return event;
     }
 }

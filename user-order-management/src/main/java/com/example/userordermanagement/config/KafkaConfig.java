@@ -7,5 +7,5 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableBinding(Source.class)
 public class KafkaConfig {
-    // Configuration for Kafka binder will be picked up from application.properties
+    // Kafka configuration will be added here
 }
